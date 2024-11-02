@@ -716,6 +716,26 @@
                 font-size: 20px;
             }
         }
+
+        .camera-select {
+            width: 100%;
+            max-width: 640px;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background-color: white;
+            color: #3c4043;
+            font-size: 16px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .camera-select {
+                background-color: #303134;
+                color: #e8eaed;
+                border-color: #5f6368;
+            }
+        }
     </style>
 </head>
 <body>
@@ -790,6 +810,9 @@
 
     <div id="cameraModal" class="camera-modal">
         <div class="camera-content">
+            <select id="cameraSelect" class="camera-select">
+                <option value="">選擇相機...</option>
+            </select>
             <video id="video" autoplay playsinline></video>
             <canvas id="canvas" style="display:none;"></canvas>
             <div class="camera-controls">
@@ -1072,19 +1095,94 @@
         const cameraModal = document.getElementById('cameraModal');
         let stream = null;
 
-        // 相機按鈕點擊事件
+        // 獲取可用相機列表
+        async function getCameraDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const cameraSelect = document.getElementById('cameraSelect');
+                
+                // 清空現有選項
+                cameraSelect.innerHTML = '<option value="">選擇相機...</option>';
+                
+                // 添加相機選項
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `相機 ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                // 如果只有一個相機，自動選擇
+                if (videoDevices.length === 1) {
+                    cameraSelect.value = videoDevices[0].deviceId;
+                    startCamera(videoDevices[0].deviceId);
+                }
+            } catch (err) {
+                console.error('獲取相機列表失敗:', err);
+            }
+        }
+
+        // 啟動相機
+        async function startCamera(deviceId) {
+            try {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: deviceId ? { deviceId: { exact: deviceId } } : true
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('相機啟動失敗:', err);
+                alert('無法啟動相機');
+            }
+        }
+
+        // 相機選擇變更事件
+        document.getElementById('cameraSelect').addEventListener('change', function() {
+            if (this.value) {
+                startCamera(this.value);
+            }
+        });
+
+        // 修改相機按鈕點擊事件
         document.getElementById('camera').addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
-                });
-                video.srcObject = stream;
                 cameraModal.style.display = 'flex';
+                await getCameraDevices();
+                
+                // 請求相機權限
+                const permission = await navigator.permissions.query({ name: 'camera' });
+                if (permission.state === 'granted') {
+                    // 如果已經有權限，獲取相機列表
+                    await getCameraDevices();
+                } else {
+                    // 如果沒有權限，先請求一次以顯示相機名稱
+                    await navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(async (mediaStream) => {
+                            mediaStream.getTracks().forEach(track => track.stop());
+                            await getCameraDevices();
+                        });
+                }
             } catch (err) {
                 console.error('相機存取錯誤:', err);
                 alert('無法存取相機');
             }
         });
+
+        // 關閉相機時清理資源
+        function closeCamera() {
+            cameraModal.style.display = 'none';
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            video.srcObject = null;
+            document.getElementById('cameraSelect').value = '';
+        }
 
         // 拍照按鈕點擊事件
         document.getElementById('captureButton').addEventListener('click', async () => {
@@ -1143,15 +1241,6 @@
 
         // 關閉相機按鈕點擊事件
         document.getElementById('closeCamera').addEventListener('click', closeCamera);
-
-        // 關閉相機函數
-        function closeCamera() {
-            cameraModal.style.display = 'none';
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-            video.srcObject = null;
-        }
     </script>
 </body>
 </html>
