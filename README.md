@@ -69,3 +69,78 @@
 - 使用 Gemini Vision API 實現圖片文字辨識
 - 使用 Web Speech Synthesis API 實現語音輸出
 - 使用 localStorage 保存使用者設定
+
+---
+
+# Voice Translator
+
+This is a web-based real-time voice translation tool that supports voice input, text input, image text recognition (OCR), and voice output.
+
+## Features
+
+### 1. Voice Input and Translation
+- Supports Chinese voice input (🎤)
+- Supports multilingual translation (Japanese, English, Spanish, Thai)
+- Real-time voice recognition and translation
+
+### 2. Text Input and Translation
+- Supports manual text input (📝)
+- Bidirectional translation functionality
+- Supports copy and paste
+
+### 3. Image Text Recognition (OCR)
+- Supports camera photo text recognition (📷)
+- Automatically translates recognized text
+
+### 4. Voice Output
+- Supports voice playback of translation results
+- TTS function can be toggled in settings
+
+### 5. Customizable Settings
+- Adjustable font size (small, medium, large, extra-large)
+- Selectable target translation language
+- Dark mode support
+- Settings are automatically saved
+
+## Usage Instructions
+
+### Basic Operations
+1. Upper Input Area:
+   - Click 🎤 for voice input
+   - Click 📝 for text input
+   
+2. Lower Input Area:
+   - Click 🎤 for Chinese voice input
+   - Click 📝 for text input
+
+3. Camera Function:
+   - Click 📷 in the bottom right to open the camera
+   - Automatically recognize and translate text after taking a photo
+
+### Settings Options
+Click ⚙️ in the bottom right to open the settings panel:
+- API Settings: Enter Gemini API Key
+- Translation Settings: Choose target language
+- Voice Settings: Toggle TTS function
+- Font Settings: Adjust display font size
+
+## System Requirements
+- Supports modern browsers (Chrome, Firefox, Safari, Edge)
+- Requires internet connection
+- Requires microphone permission (voice input)
+- Requires camera permission (OCR function)
+- Requires Gemini API Key
+
+## Notes
+1. First-time use requires entering the Gemini API Key in settings
+2. Voice recognition requires a stable internet connection
+3. Camera function requires HTTPS environment or localhost
+4. Recommended to use Chrome browser for the best experience
+
+## Technical Implementation
+- Uses Web Speech API for voice recognition
+- Uses Gemini API for text translation
+- Uses Gemini Vision API for image text recognition
+- Uses Web Speech Synthesis API for voice output
+- Uses localStorage to save user settings
+
