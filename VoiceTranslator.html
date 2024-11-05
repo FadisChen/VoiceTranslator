@@ -736,14 +736,84 @@
                 border-color: #5f6368;
             }
         }
+
+        .button-row.upside-down .voice-btn span {
+            display: inline-block;
+            transform: rotate(180deg);
+        }
+
+        /* 在 style 標籤內添加 slider 相關樣式 */
+        .slider-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #dadce0;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1a73e8;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1a73e8;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: right;
+            font-size: 14px;
+            color: #5f6368;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .slider {
+                background: #5f6368;
+            }
+            
+            .slider::-webkit-slider-thumb {
+                background: #8ab4f8;
+            }
+            
+            .slider::-moz-range-thumb {
+                background: #8ab4f8;
+            }
+            
+            .slider-value {
+                color: #e8eaed;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="display-area">
             <div class="button-row upside-down">
-                <button id="youSay2" class="voice-btn">📝</button>
-                <button id="youSay" class="voice-btn">🎤</button>
+                <button id="youSay2" class="voice-btn"><span>📝</span></button>
+                <button id="youSay" class="voice-btn"><span>🎤</span></button>
             </div>
             <textarea id="textArea1" class="text-area upside-down"></textarea>
             <textarea id="textArea2" class="text-area"></textarea>
@@ -769,7 +839,7 @@
             </div>
             <div class="settings-body">
                 <div class="settings-group">
-                    <h3>API 設定</h3>
+                    <h3>Gemini API Key</h3>
                     <div class="input-group">
                         <input type="text" id="apiKey" placeholder="輸入 Gemini API Key">
                         <button onclick="saveApiKey()">儲存</button>
@@ -783,6 +853,7 @@
                         <option value="en">英文</option>
                         <option value="es">西班牙文</option>
                         <option value="th">泰文</option>
+                        <option value="kr">韓文</option>
                     </select>
                 </div>
 
@@ -793,6 +864,11 @@
                         <span class="toggle-slider"></span>
                         <span class="toggle-label">啟用語音輸出</span>
                     </label>
+                    <div class="slider-container">
+                        <span>語速</span>
+                        <input type="range" id="ttsRate" class="slider" min="0.8" max="1.8" step="0.1" value="1.2">
+                        <span class="slider-value" id="ttsRateValue">1.2x</span>
+                    </div>
                 </div>
 
                 <div class="settings-group">
@@ -850,7 +926,7 @@
         function saveApiKey() {
             const apiKey = document.getElementById('apiKey').value;
             if (apiKey.trim() === '') {
-                alert('請輸入 API Key');
+                alert('請輸入 Gemini API Key');
                 return;
             }
             localStorage.setItem('GeminiApiKey', apiKey);
@@ -954,6 +1030,12 @@
                 document.getElementById('textArea1').style.fontSize = size;
                 document.getElementById('textArea2').style.fontSize = size;
             }
+
+            const ttsRate = localStorage.getItem('ttsRate');
+            if (ttsRate) {
+                document.getElementById('ttsRate').value = ttsRate;
+                document.getElementById('ttsRateValue').textContent = ttsRate + 'x';
+            }
         };
 
         document.getElementById('youSay2').addEventListener('click', async () => {
@@ -983,6 +1065,9 @@
 
             const utterance = new SpeechSynthesisUtterance(text);
             
+            // 設定語速
+            utterance.rate = parseFloat(document.getElementById('ttsRate').value);
+            
             // 設定語言
             switch(lang) {
                 case 'ja':
@@ -996,6 +1081,9 @@
                     break;
                 case 'th':
                     utterance.lang = 'th-TH';
+                    break;
+                case 'kr':
+                    utterance.lang = 'ko-KR';
                     break;
                 default:
                     utterance.lang = 'zh-TW';
@@ -1241,6 +1329,13 @@
 
         // 關閉相機按鈕點擊事件
         document.getElementById('closeCamera').addEventListener('click', closeCamera);
+
+        // 添加語速滑動條事件監聽
+        document.getElementById('ttsRate').addEventListener('input', function() {
+            const value = this.value;
+            document.getElementById('ttsRateValue').textContent = value + 'x';
+            localStorage.setItem('ttsRate', value);
+        });
     </script>
 </body>
 </html>
