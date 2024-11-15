@@ -1060,36 +1060,46 @@
             const ttsEnabled = document.getElementById('ttsEnabled').checked;
             if (!ttsEnabled) return;
 
-            // 停止當前正在播放的語音
-            synth.cancel();
+            // 獲取當前語速設定
+            const rate = parseFloat(document.getElementById('ttsRate').value);
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            // 設定語速
-            utterance.rate = parseFloat(document.getElementById('ttsRate').value);
-            
-            // 設定語言
-            switch(lang) {
-                case 'ja':
-                    utterance.lang = 'ja-JP';
-                    break;
-                case 'en':
-                    utterance.lang = 'en-US';
-                    break;
-                case 'es':
-                    utterance.lang = 'es-ES';
-                    break;
-                case 'th':
-                    utterance.lang = 'th-TH';
-                    break;
-                case 'kr':
-                    utterance.lang = 'ko-KR';
-                    break;
-                default:
-                    utterance.lang = 'zh-TW';
+            // 檢查是否在 Android WebView 中
+            if (window.Android && typeof Android.speak === 'function') {
+                // 使用 Android TTS，傳入語言參數和語速
+                Android.speak(text, lang, rate);
+            } else {
+                // 使用網頁的 TTS
+                // 停止當前正在播放的語音
+                synth.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // 設定語速
+                utterance.rate = rate;
+                
+                // 設定語言
+                switch(lang) {
+                    case 'ja':
+                        utterance.lang = 'ja-JP';
+                        break;
+                    case 'en':
+                        utterance.lang = 'en-US';
+                        break;
+                    case 'es':
+                        utterance.lang = 'es-ES';
+                        break;
+                    case 'th':
+                        utterance.lang = 'th-TH';
+                        break;
+                    case 'kr':
+                        utterance.lang = 'ko-KR';
+                        break;
+                    default:
+                        utterance.lang = 'zh-TW';
+                }
+
+                synth.speak(utterance);
             }
-
-            synth.speak(utterance);
         }
 
         // 保存 TTS 設定到 localStorage
