@@ -849,11 +849,11 @@
                 <div class="settings-group">
                     <h3>翻譯設定</h3>
                     <select id="targetLang">
-                        <option value="ja">日文</option>
-                        <option value="en">英文</option>
-                        <option value="es">西班牙文</option>
-                        <option value="th">泰文</option>
-                        <option value="kr">韓文</option>
+                        <option value="ja-JP">日文</option>
+                        <option value="en-US">英文</option>
+                        <option value="es-ES">西班牙文</option>
+                        <option value="th-TH">泰文</option>
+                        <option value="ko-KR">韓文</option>
                     </select>
                 </div>
 
@@ -980,13 +980,13 @@
 
         document.getElementById('youSay').addEventListener('mousedown', () => {
             currentButton = 'youSay';
-            recognition.lang = targetLangSelect.value;
+            updateRecognitionLang('youSay');
             recognition.start();
         });
 
         document.getElementById('iSay').addEventListener('mousedown', () => {
             currentButton = 'iSay';
-            recognition.lang = 'zh-TW';
+            updateRecognitionLang('iSay');
             recognition.start();
         });
 
@@ -1060,44 +1060,15 @@
             const ttsEnabled = document.getElementById('ttsEnabled').checked;
             if (!ttsEnabled) return;
 
-            // 獲取當前語速設定
             const rate = parseFloat(document.getElementById('ttsRate').value);
 
-            // 檢查是否在 Android WebView 中
-            if (window.Android && typeof Android.speak === 'function') {
-                // 使用 Android TTS，傳入語言參數和語速
-                Android.speak(text, lang, rate);
+            if (window.Android) {
+                window.Android.speak(text, lang, rate);
             } else {
-                // 使用網頁的 TTS
-                // 停止當前正在播放的語音
                 synth.cancel();
-
                 const utterance = new SpeechSynthesisUtterance(text);
-                
-                // 設定語速
                 utterance.rate = rate;
-                
-                // 設定語言
-                switch(lang) {
-                    case 'ja':
-                        utterance.lang = 'ja-JP';
-                        break;
-                    case 'en':
-                        utterance.lang = 'en-US';
-                        break;
-                    case 'es':
-                        utterance.lang = 'es-ES';
-                        break;
-                    case 'th':
-                        utterance.lang = 'th-TH';
-                        break;
-                    case 'kr':
-                        utterance.lang = 'ko-KR';
-                        break;
-                    default:
-                        utterance.lang = 'zh-TW';
-                }
-
+                utterance.lang = lang;
                 synth.speak(utterance);
             }
         }
@@ -1145,12 +1116,13 @@
             currentButton = null;
         };
 
-        // 添加語言自動切換
+        // 修改 updateRecognitionLang 函數
         function updateRecognitionLang(button) {
             if (button === 'youSay') {
-                recognition.lang = targetLangSelect.value;  // 使用目標語言
+                // 直接使用完整的語言代碼
+                recognition.lang = targetLangSelect.value; // 已經在 select 選項中設定完整的語言代碼
             } else {
-                recognition.lang = 'zh-TW';  // 預設使用中文
+                recognition.lang = 'zh-TW';
             }
         }
 
