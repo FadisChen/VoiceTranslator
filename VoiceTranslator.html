@@ -1041,7 +1041,7 @@
         document.getElementById('youSay2').addEventListener('click', async () => {
             const text = document.getElementById('textArea1').value;
             if (!text.trim()) return;
-            const translatedText = await translateText(text, '繁體中文');
+            const translatedText = await translateText(text, 'zh-TW');
             document.getElementById('textArea2').value = translatedText;
         });
 
